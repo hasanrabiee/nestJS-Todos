@@ -2,9 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { Response } from 'express';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { TokenPayload } from './types/tokenPayload.interface';
 
 @Injectable()
@@ -29,25 +29,30 @@ export class AuthService {
   }
 
   async login(user: User, response: Response) {
+    const accessTokenExpirationMs =
+      parseInt(
+        this.configService
+          .getOrThrow<string>('JWT_ACCESS_TOKEN_EXPIRATION_MS')
+          .trim(),
+      ) || 3600000;
+
+    const refreshTokenExpirationMs =
+      parseInt(
+        this.configService
+          .getOrThrow<string>('JWT_REFRESH_TOKEN_EXPIRATION_MS')
+          .trim(),
+      ) || 604800000;
+
     const expiresAccessToken = new Date();
     expiresAccessToken.setMilliseconds(
-      expiresAccessToken.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION_MS',
-          ),
-        ),
+      expiresAccessToken.getTime() + accessTokenExpirationMs,
     );
 
     const expiresRefreshToken = new Date();
     expiresRefreshToken.setMilliseconds(
-      expiresRefreshToken.getTime() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            'JWT_REFRESH_TOKEN_EXPIRATION_MS',
-          ),
-        ),
+      expiresRefreshToken.getTime() + refreshTokenExpirationMs,
     );
+
     const tokenPayload: TokenPayload = {
       email: user.email,
       id: user.id,
@@ -83,9 +88,10 @@ export class AuthService {
   async verifyUserRefreshToken(refreshToken: string, userId: string) {
     try {
       const user = await this.userService.getUserById(userId);
+      console.log(refreshToken);
       const authenticated = await compare(refreshToken, user.refreshToken);
       if (!authenticated) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('here');
       }
     } catch (e) {
       throw new UnauthorizedException('refresh token in not valid ');

@@ -1,26 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '../user/entities/user.entity';
+import { EntityManager, QueryRunner, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Task } from './entities/task.entity';
 
 @Injectable()
 export class TaskService {
-  create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+  constructor(
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
+    private readonly entityManager: EntityManager,
+  ) {}
+  create(user: User, createTaskDto: CreateTaskDto) {
+    const task = this.taskRepository.create({ ...createTaskDto, user });
+    return this.taskRepository.save(task);
   }
 
-  findAll() {
-    return `This action returns all task`;
+  findAll(user: User) {
+    return this.taskRepository.find({
+      where: { user: { id: user.id } },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} task`;
+  async findOne(id: string, user: User) {
+    const task = await this.taskRepository.findOne({
+      where: { id, user: { id: user.id } },
+    });
+
+    if (!task) {
+      throw new BadRequestException(
+        'Task not found or you do not have access to it.',
+      );
+    }
+
+    return task;
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  async update(id: string, user: User, updateTaskDto: UpdateTaskDto) {
+    const task = await this.taskRepository.findOne({
+      where: { id, user: { id: user.id } },
+    });
+
+    if (!task) {
+      throw new BadRequestException(
+        'Task not found or you do not have permission to update it.',
+      );
+    }
+
+    // Update the task with the provided details
+    Object.assign(task, updateTaskDto);
+
+    // Save and return the updated task
+    return this.taskRepository.save(task);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} task`;
+  async remove(id: string, user: User) {
+    // Check if the task exists and belongs to the logged-in user
+    const task = await this.taskRepository.findOne({
+      where: { id, user: { id: user.id } },
+    });
+
+    if (!task) {
+      throw new BadRequestException(
+        'Task not found or you do not have permission to delete it.',
+      );
+    }
+
+    // Perform soft delete
+    await this.taskRepository.softDelete(id);
+
+    return { message: 'Task deleted successfully' };
   }
 }

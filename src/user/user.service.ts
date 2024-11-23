@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, QueryRunner, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -12,16 +16,38 @@ export class UserService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly entityManager: EntityManager,
   ) {}
-  async create(createUserDto: CreateUserDto) {
-    return await this.entityManager.transaction(
-      async (transactionalEntityManager) => {
-        const userRepo = transactionalEntityManager.getRepository(User);
-        const user = userRepo.create(createUserDto);
-        await userRepo.save(user);
+  async create(createUserDto: CreateUserDto): Promise<SerializedUser> {
+    const queryRunner: QueryRunner =
+      this.entityManager.connection.createQueryRunner();
 
-        return new SerializedUser(user);
-      },
-    );
+    // Establish a new transaction
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Get repositories from QueryRunner
+      const userRepo = queryRunner.manager.getRepository(User);
+
+      // Create and save the user
+      const user = userRepo.create(createUserDto);
+      await userRepo.save(user);
+
+      // Commit the transaction
+      await queryRunner.commitTransaction();
+
+      // Return the serialized user
+      return new SerializedUser(user);
+    } catch (error) {
+      // Rollback the transaction in case of an error
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        'Transaction failed',
+        error.message,
+      );
+    } finally {
+      // Release the QueryRunner, regardless of success or failure
+      await queryRunner.release();
+    }
   }
 
   async getUserByEmail(email: string) {
@@ -59,11 +85,9 @@ export class UserService {
     try {
       const users = await this.userRepo.find({});
       return users;
-    } catch (e) {}
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -71,16 +95,13 @@ export class UserService {
       async (transactionalEntityManager) => {
         const userRepo = transactionalEntityManager.getRepository(User);
 
-        // Find the user by ID
         const user = await userRepo.findOne({ where: { id } });
         if (!user) {
           throw new Error(`User with ID #${id} not found`);
         }
 
-        // Merge the update data into the existing user
         userRepo.merge(user, updateUserDto);
 
-        // Save the updated user to the database
         const updatedUser = await userRepo.save(user);
 
         return new SerializedUser(updatedUser);

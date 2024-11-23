@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { CurrentUser } from '../decorators/currentUser.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth-guard';
+import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { User } from '../user/entities/user.entity';
 
+@ApiTags('Tasks')
+@ApiCookieAuth('Authentication')
 @Controller('task')
+@UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.taskService.create(createTaskDto);
+  create(@CurrentUser() user: User, @Body() createTaskDto: CreateTaskDto) {
+    return this.taskService.create(user, createTaskDto);
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(@CurrentUser() user: User) {
+    return this.taskService.findAll(user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(+id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.taskService.findOne(id, user);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.taskService.update(+id, updateTaskDto);
+  update(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    return this.taskService.update(id, user, updateTaskDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(+id);
+  remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.taskService.remove(id, user);
   }
 }

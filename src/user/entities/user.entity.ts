@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { hash } from 'bcryptjs';
+import { Task } from '../../task/entities/task.entity';
 
 @Entity()
 export class User {
@@ -24,6 +26,9 @@ export class User {
     nullable: true,
   })
   refreshToken: string;
+
+  @OneToMany(() => Task, (task) => task.user)
+  tasks: Task[];
 
   @BeforeInsert()
   async hashPasword() {

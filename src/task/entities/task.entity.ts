@@ -1,28 +1,42 @@
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Entity()
 export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({
+    type: 'text',
+  })
   title: string;
 
-  @Column()
+  @Column({
+    type: 'text',
+  })
   description: string;
 
-  @Column()
+  @Column({
+    type: 'date',
+  })
   dueDate: Date;
 
   @Column({
+    type: 'boolean',
     default: false,
   })
   completed: boolean;
+
+  @ManyToOne(() => User, (user) => user.tasks, { onDelete: 'CASCADE' })
+  user: User;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string;
