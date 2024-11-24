@@ -11,7 +11,6 @@ import { EntityManager, QueryRunner, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { SerializedUser } from './types';
 
 @Injectable()
 export class UserService {
@@ -21,7 +20,7 @@ export class UserService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {}
-  async create(createUserDto: CreateUserDto): Promise<SerializedUser> {
+  async create(createUserDto: CreateUserDto) {
     const queryRunner: QueryRunner =
       this.entityManager.connection.createQueryRunner();
 
@@ -33,7 +32,7 @@ export class UserService {
       const user = userRepo.create(createUserDto);
       await userRepo.save(user);
       await queryRunner.commitTransaction();
-      return new SerializedUser(user);
+      return user;
     } catch (error) {
       this.logger.error(error);
       await queryRunner.rollbackTransaction();
@@ -87,10 +86,7 @@ export class UserService {
     }
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<SerializedUser> {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const queryRunner: QueryRunner =
       this.entityManager.connection.createQueryRunner();
 
@@ -108,7 +104,7 @@ export class UserService {
       userRepo.merge(user, updateUserDto);
       const updatedUser = await userRepo.save(user);
       await queryRunner.commitTransaction();
-      return new SerializedUser(updatedUser);
+      return updatedUser;
     } catch (error) {
       this.logger.error(error);
       await queryRunner.rollbackTransaction();

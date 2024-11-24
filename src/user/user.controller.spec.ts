@@ -3,7 +3,6 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InternalServerErrorException } from '@nestjs/common';
-import { SerializedUser } from './types';
 import { User } from './entities/user.entity';
 
 describe('UserController', () => {
@@ -44,10 +43,17 @@ describe('UserController', () => {
         email: 'testuser@example.com',
         refreshToken: null,
       };
-      const serializedUser = new SerializedUser({
-        id: '1',
-        email: createUserDto.email,
-      });
+      const serializedUser = {
+        id: 'user-id',
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        tasks: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+        refreshToken: null,
+        hashPasword: jest.fn(),
+      };
 
       jest.spyOn(userService, 'create').mockResolvedValue(serializedUser);
 

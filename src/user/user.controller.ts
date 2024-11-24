@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  LoggerService,
-  Inject,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,9 +17,7 @@ import { UserResponseDto } from './dto/userResponseDto';
 @ApiTags('users')
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
@@ -67,7 +54,7 @@ export class UserController {
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Patch('')
+  @Patch()
   update(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(user.id, updateUserDto);
   }

@@ -21,8 +21,8 @@ export class TaskService {
   async findAll(user: User, page: number = 1, limit: number = 10) {
     const [tasks, total] = await this.taskRepository.findAndCount({
       where: { user: { id: user.id } },
-      take: limit, 
-      skip: (page - 1) * limit, 
+      take: limit,
+      skip: (page - 1) * limit,
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -61,15 +61,12 @@ export class TaskService {
       );
     }
 
-    // Update the task with the provided details
     Object.assign(task, updateTaskDto);
 
-    // Save and return the updated task
     return this.taskRepository.save(task);
   }
 
   async remove(id: string, user: User) {
-    // Check if the task exists and belongs to the logged-in user
     const task = await this.taskRepository.findOne({
       where: { id, user: { id: user.id } },
     });
@@ -80,7 +77,6 @@ export class TaskService {
       );
     }
 
-    // Perform soft delete
     await this.taskRepository.softDelete(id);
 
     return { message: 'Task deleted successfully' };

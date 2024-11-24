@@ -6,7 +6,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class LogMiddleware implements NestMiddleware {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
     const { method, originalUrl } = req;
@@ -15,13 +17,11 @@ export class LogMiddleware implements NestMiddleware {
 
     const startTime = Date.now();
 
-    // Listen for the 'finish' event to log after the response is completed
     res.on('finish', () => {
       const { statusCode } = res;
       const contentLength = res.get('content-length') || '0';
       const responseTime = Date.now() - startTime;
 
-      // Log the request and response details using Winston
       this.logger.info({
         message: 'Request completed',
         method,
@@ -34,7 +34,6 @@ export class LogMiddleware implements NestMiddleware {
       });
     });
 
-    // Continue to the next middleware
     next();
   }
 }
