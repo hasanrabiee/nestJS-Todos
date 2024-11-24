@@ -108,14 +108,30 @@ describe('TaskController', () => {
       },
     ];
 
-    mockTaskService.findAll.mockResolvedValue(mockTasks);
+    const page = 1;
+    const limit = 10;
+
+    // Mocking the behavior of the findAll method in taskService
+    jest.spyOn(taskService, 'findAll').mockResolvedValue({
+      data: mockTasks,
+      page,
+      limit,
+      total: 2,
+      totalPages: 1,
+    });
 
     // Act
-    const result = await controller.findAll(mockUser);
+    const result = await controller.findAll(mockUser, page, limit);
 
     // Assert
-    expect(taskService.findAll).toHaveBeenCalledWith(mockUser);
-    expect(result).toEqual(mockTasks);
+    expect(taskService.findAll).toHaveBeenCalledWith(mockUser, page, limit);
+    expect(result).toEqual({
+      data: mockTasks,
+      page: 1,
+      limit: 10,
+      total: 2,
+      totalPages: 1,
+    });
   });
 
   it('should call taskService.remove with correct arguments and return success message', async () => {

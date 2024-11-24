@@ -6,8 +6,8 @@ import { EntityManager, QueryRunner, Repository, UpdateResult } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { getMockedQueryRunner } from '../mocks/query-runner.mock';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { getMockedQueryRunner } from '../mocks/query-runner.mock';
 
 describe('TaskService', () => {
   let service: TaskService;
@@ -18,6 +18,7 @@ describe('TaskService', () => {
   beforeEach(async () => {
     // Mock Repository methods
     mockTaskRepository = {
+      findAndCount: jest.fn(),
       find: jest.fn(),
       create: jest.fn(),
       findOne: jest.fn(),
@@ -58,7 +59,7 @@ describe('TaskService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should find all tasks for a user', async () => {
+  it('should return paginated tasks for a user', async () => {
     const mockUser: User = {
       id: '1',
       email: 'test@example.com',
@@ -70,6 +71,7 @@ describe('TaskService', () => {
       deletedAt: null,
       hashPasword: jest.fn(),
     };
+
     const mockTasks: Task[] = [
       {
         id: '1',
@@ -95,14 +97,32 @@ describe('TaskService', () => {
       },
     ];
 
-    jest.spyOn(mockTaskRepository, 'find').mockResolvedValue(mockTasks);
+    const totalTasks = 20; // Example of total number of tasks
+    const page = 2;
+    const limit = 5;
 
-    const result = await service.findAll(mockUser as any);
+    // Mock the repository method for findAndCount
+    jest
+      .spyOn(mockTaskRepository, 'findAndCount')
+      .mockResolvedValue([mockTasks, totalTasks]);
 
-    expect(mockTaskRepository.find).toHaveBeenCalledWith({
+    const result = await service.findAll(mockUser, page, limit);
+
+    // Assert the findAndCount method was called correctly with pagination
+    expect(mockTaskRepository.findAndCount).toHaveBeenCalledWith({
       where: { user: { id: mockUser.id } },
+      take: limit,
+      skip: (page - 1) * limit,
     });
-    expect(result).toEqual(mockTasks);
+
+    // Assert the result structure
+    expect(result).toEqual({
+      data: mockTasks,
+      page,
+      limit,
+      total: totalTasks,
+      totalPages: Math.ceil(totalTasks / limit),
+    });
   });
 
   it('should return the task if it exists and belongs to the user', async () => {

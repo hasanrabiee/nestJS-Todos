@@ -18,10 +18,22 @@ export class TaskService {
     return this.taskRepository.save(task);
   }
 
-  findAll(user: User) {
-    return this.taskRepository.find({
+  async findAll(user: User, page: number = 1, limit: number = 10) {
+    const [tasks, total] = await this.taskRepository.findAndCount({
       where: { user: { id: user.id } },
+      take: limit, 
+      skip: (page - 1) * limit, 
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: tasks,
+      page,
+      limit,
+      total,
+      totalPages,
+    };
   }
 
   async findOne(id: string, user: User) {

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -8,16 +9,29 @@ import {
 } from 'class-validator';
 
 export class CreateTaskDto {
+  @ApiProperty({
+    example: 'title',
+    description: 'this is title ',
+  })
   @IsString()
   @IsNotEmpty()
   title: string;
 
+  @ApiProperty({
+    example: 'description',
+    description: 'this is description ',
+  })
   @IsString()
   @IsNotEmpty()
   description: string;
 
-  @Type(() => Date) // Transform input to a Date instance
-  @IsDate({ message: 'dueDate must be a valid date' }) // Validate that it's a Date instance
+  @ApiProperty({
+    example: '2023-12-01T12:34:56Z',
+    description: 'this is date ',
+  })
+  @Type(() => Date)
+  @IsDate()
+  @IsNotEmpty()
   dueDate: Date;
 
   @IsBoolean()

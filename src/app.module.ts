@@ -1,4 +1,9 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,11 +13,35 @@ import { UniqueConstraintExceptionFilter } from './exception/unique.exception';
 import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { LogMiddleware } from './middlewares/log.middleware';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-
+    WinstonModule.forRoot({
+      level: 'info',
+      format: winston.format.json(),
+      defaultMeta: {},
+      transports: [
+        new winston.transports.File({
+          format: winston.format.json(),
+          filename: 'log/nowatch-info.log',
+          level: 'info',
+          maxFiles: 1,
+        }),
+        new winston.transports.File({
+          filename: 'log/nowatch-error.log',
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+          maxFiles: 1,
+        }),
+      ],
+    }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
@@ -43,4 +72,8 @@ import { AuthModule } from './auth/auth.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogMiddleware).forRoutes('*');
+  }
+}

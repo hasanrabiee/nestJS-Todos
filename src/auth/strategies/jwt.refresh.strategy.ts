@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { TokenPayload } from '../types/tokenPayload.interface';
 import { AuthService } from '../auth.service';
+
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
@@ -15,19 +16,24 @@ export class JwtRefreshStrategy extends PassportStrategy(
     private readonly authService: AuthService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => request.cookies?.Authentication,
-      ]),
+      jwtFromRequest: (req: Request) => {
+        const token = req.body?.refreshToken;
+        if (!token) {
+          throw new UnauthorizedException('Refresh token missing in body');
+        }
+        return token;
+      },
       secretOrKey: configService.getOrThrow<string>('JWT_REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,
     });
   }
 
   async validate(request: Request, payload: TokenPayload) {
-    console.log('here');
-    return this.authService.verifyUserRefreshToken(
-      request.cookies?.refresh,
-      payload.id,
-    );
+    const refreshToken = request.body?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing in body');
+    }
+    await this.authService.verifyUserRefreshToken(refreshToken, payload.id);
+    return payload;
   }
 }

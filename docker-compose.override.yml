@@ -1,9 +1,0 @@
-version: '3.8'
-services:
-  app:
-    environment:
-      - NODE_ENV=development
-    command: npm run start:dev # Enable live-reload for development
-    volumes:
-      - .:/app
-      - /app/node_modules

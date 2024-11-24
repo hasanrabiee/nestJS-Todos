@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { hash } from 'bcryptjs';
 import { Task } from '../../task/entities/task.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -20,11 +21,13 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @Column({
     nullable: true,
   })
+  @Exclude()
   refreshToken: string;
 
   @OneToMany(() => Task, (task) => task.user)
