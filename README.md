@@ -1,73 +1,114 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# NOWATCH Todo Application
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a **Todo Application** built using **NestJS**, offering a range of features such as user authentication, task management, and more. The application is designed to be scalable, maintainable, and efficient.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Before you start, ensure that your development environment meets the following requirements:
+
+- **Node.js**: Version 16 or higher
+- **PostgreSQL**: Version 14 or higher
+
+### Don't Have These Installed?
+
+No problem! You can use the included **Docker Compose** file to set up the required environment effortlessly.
+
+---
+
+## Technologies Used
+
+The project leverages the following technologies:
+
+- **NestJS (v10)**: A progressive framework for building efficient, reliable, and scalable server-side applications.
+- **TypeScript (v5)**: Enhances developer productivity and ensures type safety.
+- **Swagger (v8)**: For documenting the API endpoints.
+- **Jest (v29)**: A robust testing framework.
+- **Winston (v1.9)**: A logging library for tracking application events.
+- **PassportJS**: Used for user authentication with strategies such as:
+  - **Passport JWT**
+  - **Passport Local**
+- **TypeORM (v0.3)**: An Object-Relational Mapping (ORM) library for database interactions.
+- **bcryptjs (v2)**: For secure data hashing, especially passwords.
+
+---
+
+## Features
+
+### Authentication
+
+- **User Registration**: Allow users to create an account.
+- **User Login**: Authenticates users using JWT (JSON Web Tokens).
+- **User Logout**: Securely logs users out by invalidating their session.
+
+### Task Management
+
+- **Create Tasks**: Add new tasks to your to-do list.
+- **Edit Tasks**: Modify existing tasks.
+- **Delete Tasks**: Remove tasks from your list.
+- **View Tasks**: Retrieve and display all tasks created by a user.
+
+---
 
 ## Installation
 
-```bash
-$ yarn install
-```
+### Step 1: Install Dependencies
 
-## Running the app
+Run the following command to install all required dependencies:
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+yarn install
 ```
 
-## Test
+### Step 2: Build Docker Containers
+
+If you have Docker installed, you can set up the application and its dependencies using Docker Compose. Run:
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+docker compose up --build
 ```
 
-## Support
+### Step 3: Configure the Environment
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Set up your `.env` file with the necessary environment variables. Below is an example configuration:
 
-## Stay in touch
+```bash
+# Database Configuration
+DB_HOST=db
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=password
+DB_NAME=nowatch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Application Environment
+NODE_ENV=development
 
-## License
+# JWT Configuration
+JWT_ACCESS_TOKEN_SECRET=CdZMIUTEJ9eDUcRNchJuDASJ9UiJ3IzB
+JWT_ACCESS_TOKEN_EXPIRATION_MS=360000 # 1 hour
+JWT_REFRESH_TOKEN_SECRET=xtpqhYFPoCsPszo0NbQPdeECeMMP9viP
+JWT_REFRESH_TOKEN_EXPIRATION_MS=604800000 # 1 week
+```
 
-Nest is [MIT licensed](LICENSE).
+---
+
+## API Documentation
+
+You can access detailed API documentation generated by Swagger at the following URL:
+
+[http://localhost:3000/doc](http://localhost:3000/doc)
+
+---
+
+## Additional Notes
+
+- This application uses **JWT** for stateless authentication, ensuring security and scalability.
+- Logs are generated using **Winston**, allowing for effective debugging and monitoring and all logs store in log folder.
+- Extensive test coverage with **Jest** has not been provided due to time constraints.
+
+---
+
+### License
+
+This project is licensed under the MIT License.
